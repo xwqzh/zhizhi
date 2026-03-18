@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -171,21 +174,21 @@ public class MinioService implements FileStorageService {
     public void deleteFile(String fileUrl) throws Exception {
         checkMinioAvailable();
 
-        // 从URL中提取文件名
-        String fileName = extractFileNameFromUrl(fileUrl);
+        // 从 URL/存储路径中解析完整对象键（如 yyyyMM/uuid.ext）
+        String objectName = extractObjectName(fileUrl);
 
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(minioConfig.getBucketName())
-                            .object(fileName)
+                            .object(objectName)
                             .build()
             );
 
-            log.info("[文件] 文件删除成功 - 文件名: {}", fileName);
+            log.info("[文件] 文件删除成功 - object: {}", objectName);
 
         } catch (Exception e) {
-            log.error("[文件] 文件删除失败 - 文件名: {}", fileName, e);
+            log.error("[文件] 文件删除失败 - object: {}", objectName, e);
             throw new BusinessException("文件删除失败，请稍后重试");
         }
     }
@@ -329,19 +332,70 @@ public class MinioService implements FileStorageService {
     }
 
     /**
-     * 从URL中提取文件名
+     * 从 URL/存储路径中提取对象键。
+     *
+     * <p>支持输入：
+     * <ul>
+     *   <li>http://host/bucket/yyyyMM/uuid.ext</li>
+     *   <li>bucket/yyyyMM/uuid.ext</li>
+     *   <li>yyyyMM/uuid.ext</li>
+     * </ul>
      */
-    private String extractFileNameFromUrl(String fileUrl) {
-        if (fileUrl == null || fileUrl.isEmpty()) {
+    private String extractObjectName(String fileUrlOrPath) {
+        if (fileUrlOrPath == null || fileUrlOrPath.trim().isEmpty()) {
             throw new BusinessException("文件URL不能为空");
         }
 
-        // 如果是完整URL，提取文件名部分
-        if (fileUrl.contains("/")) {
-            return fileUrl.substring(fileUrl.lastIndexOf("/") + 1);
+        String normalized = stripQueryAndFragment(fileUrlOrPath.trim());
+        normalized = URLDecoder.decode(normalized, StandardCharsets.UTF_8);
+
+        // 完整 URL：先取 path，避免协议/域名干扰
+        if (normalized.startsWith("http://") || normalized.startsWith("https://")) {
+            try {
+                URI uri = URI.create(normalized);
+                if (uri.getPath() != null && !uri.getPath().isEmpty()) {
+                    normalized = uri.getPath();
+                }
+            } catch (Exception ignored) {
+                // 解析失败时继续使用原始字符串作为兜底
+            }
         }
 
-        // 如果已经是文件名，直接返回
-        return fileUrl;
+        if (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+
+        String bucketName = minioConfig.getBucketName();
+        if (bucketName != null && !bucketName.isEmpty()) {
+            // 形如 bucket/yyyyMM/uuid.ext
+            String bucketPrefix = bucketName + "/";
+            if (normalized.startsWith(bucketPrefix)) {
+                return normalized.substring(bucketPrefix.length());
+            }
+
+            // 兼容 proxy/cdn 前缀：.../bucket/yyyyMM/uuid.ext
+            String marker = "/" + bucketPrefix;
+            int markerIndex = normalized.indexOf(marker);
+            if (markerIndex >= 0) {
+                return normalized.substring(markerIndex + marker.length());
+            }
+        }
+
+        // 已经是对象键（或兼容历史数据）
+        return normalized;
+    }
+
+    private String stripQueryAndFragment(String value) {
+        int questionIndex = value.indexOf('?');
+        int hashIndex = value.indexOf('#');
+        int cutIndex;
+        if (questionIndex >= 0 && hashIndex >= 0) {
+            cutIndex = Math.min(questionIndex, hashIndex);
+        } else if (questionIndex >= 0) {
+            cutIndex = questionIndex;
+        } else {
+            cutIndex = hashIndex;
+        }
+        return cutIndex >= 0 ? value.substring(0, cutIndex) : value;
     }
 }

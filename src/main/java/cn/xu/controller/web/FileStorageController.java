@@ -12,7 +12,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件存储控制器
@@ -75,13 +77,16 @@ public class FileStorageController {
      * <p>根据文件URL列表批量删除文件
      * <p>需要登录后才能访问
      *
-     * @param fileUrls 文件URL列表
+     * @param requestBody 请求体，兼容两种格式：
+     *                    1) ["url1", "url2"]
+     *                    2) {"fileUrls":["url1","url2"]}
      * @return 删除结果
      * @throws BusinessException 当删除失败时抛出
      */
     @PostMapping("/deleteBatch")
     @ApiOperationLog(description = "批量删除文件")
-    public ResponseEntity<Void> deleteFiles(@RequestBody List<String> fileUrls) {
+    public ResponseEntity<Void> deleteFiles(@RequestBody Object requestBody) {
+        List<String> fileUrls = parseFileUrls(requestBody);
         if (fileUrls == null || fileUrls.isEmpty()) {
             throw new BusinessException(ResponseCode.PARAM_ERROR.getCode(), "fileUrls不能为空");
         }
@@ -98,5 +103,32 @@ public class FileStorageController {
             log.error("批量删除文件失败", e);
             throw new BusinessException(ResponseCode.UN_ERROR.getCode(), "批量删除文件失败，请稍后重试");
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> parseFileUrls(Object requestBody) {
+        if (requestBody == null) {
+            return null;
+        }
+
+        Object rawList = requestBody;
+        if (requestBody instanceof Map) {
+            rawList = ((Map<String, Object>) requestBody).get("fileUrls");
+        }
+
+        if (!(rawList instanceof List)) {
+            throw new BusinessException(ResponseCode.PARAM_ERROR.getCode(), "fileUrls参数格式错误");
+        }
+
+        List<String> fileUrls = new ArrayList<>();
+        for (Object item : (List<?>) rawList) {
+            if (item != null) {
+                String value = String.valueOf(item).trim();
+                if (!value.isEmpty()) {
+                    fileUrls.add(value);
+                }
+            }
+        }
+        return fileUrls;
     }
 }

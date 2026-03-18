@@ -29,7 +29,7 @@ export function uploadFiles(files: File[]): Promise<ApiResponse<UploadResult>> {
 }
 
 export function deleteFiles(fileUrls: string[]): Promise<ApiResponse> {
-  return request({ url: '/file/deleteBatch', method: 'post', data: { fileUrls } })
+  return request({ url: '/file/deleteBatch', method: 'post', data: fileUrls })
 }
 
 export function uploadImage(file: File): Promise<ApiResponse<UploadResult>> {
