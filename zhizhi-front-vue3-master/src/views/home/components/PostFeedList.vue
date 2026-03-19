@@ -84,7 +84,7 @@
             <el-icon><ChatDotRound /></el-icon>
             <span>{{ getPostCommentCount(post) || 0 }}</span>
           </div>
-          <div class="action-item" @click.stop="handleCollect(post)">
+          <div class="action-item" :class="{ 'is-active': post.isFavorited }" @click.stop="handleCollect(post)">
             <el-icon><Star /></el-icon>
             <span>{{ getPostFavoriteCount(post) || 0 }}</span>
           </div>
@@ -116,8 +116,9 @@ import { useRouter } from 'vue-router'
 import { ChatDotRound, Star, Loading } from '@element-plus/icons-vue'
 import CustomIcon from '@/components/CustomIcon/index.vue'
 import { ElMessage } from 'element-plus'
-import { getPosts, getHotPosts, getFeaturedPosts } from '@/api/home'
+import { getPosts, getHotPosts, getFeaturedPosts, getFollowingPosts } from '@/api/home'
 import { likePost, unlikePost } from '@/api/post'
+import favoritesApi, { FavoriteType } from '@/api/favorites'
 import { useUserStore } from '@/stores/module/user'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -143,6 +144,7 @@ interface PostItemData {
   likeCount?: number
   commentCount?: number
   favoriteCount?: number
+  isFavorited?: boolean
   tagNameList?: string[]
 }
 
@@ -164,6 +166,7 @@ interface FeedPost {
   tagNameList?: string[]
   isExpanded?: boolean
   isLiked?: boolean
+  isFavorited?: boolean
   showComments?: boolean
 }
 
@@ -177,6 +180,10 @@ const props = withDefaults(defineProps<Props>(), {
   activeTab: 'latest',
   tagId: null
 })
+
+const emit = defineEmits<{
+  'update:activeTab': [value: string]
+}>()
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -325,24 +332,79 @@ const handleLike = async (post: FeedPost) => {
   }
 }
 
-const handleCollect = (post: FeedPost) => {
+const handleCollect = async (post: FeedPost) => {
   if (!userStore.isAuthenticated) {
     ElMessage.warning('请先登录')
+    window.dispatchEvent(new CustomEvent('show-login-dialog'))
     return
   }
-  ElMessage.success('收藏成功')
+
+  const postId = getPostId(post)
+  if (!postId) {
+    return
+  }
+
+  const item = getPostItem(post) as PostItemData
+  const originalIsFavorited = Boolean(post.isFavorited)
+  const originalFavoriteCount = item.favoriteCount || 0
+
+  // 乐观更新
+  post.isFavorited = !originalIsFavorited
+  if (item) {
+    item.favoriteCount = post.isFavorited
+      ? originalFavoriteCount + 1
+      : Math.max(0, originalFavoriteCount - 1)
+  }
+
+  try {
+    if (originalIsFavorited) {
+      await favoritesApi.removeFavorite({
+        targetId: postId,
+        targetType: FavoriteType.POST
+      })
+      ElMessage.success('已取消收藏')
+    } else {
+      await favoritesApi.addFavorite({
+        targetId: postId,
+        targetType: FavoriteType.POST
+      })
+      ElMessage.success('收藏成功')
+    }
+  } catch (error: any) {
+    // 回滚状态
+    post.isFavorited = originalIsFavorited
+    if (item) {
+      item.favoriteCount = originalFavoriteCount
+    }
+    ElMessage.error(error?.response?.data?.info || '操作失败，请稍后重试')
+  }
 }
 
 // 加载帖子
 const loadPosts = async (page = 1) => {
   if (noMore.value && page > 1) return
+
+  if (props.activeTab === 'following' && !userStore.isAuthenticated) {
+    postList.value = []
+    total.value = 0
+    ElMessage.warning('请先登录以查看关注内容')
+    emit('update:activeTab', 'latest')
+    return
+  }
+
   loading.value = true
   
   try {
     let response
-    const params = { page, size: pageSize.value, tagId: props.tagId as number | undefined }
+    const params = {
+      page,
+      size: pageSize.value,
+      tagId: props.activeTab === 'following' ? undefined : (props.tagId as number | undefined)
+    }
     
-    if (props.activeTab === 'latest') {
+    if (props.activeTab === 'following') {
+      response = await getFollowingPosts({ page, size: pageSize.value })
+    } else if (props.activeTab === 'latest') {
       response = await getPosts({ ...params, sort: 'latest' })
     } else if (props.activeTab === 'hot') {
       response = await getHotPosts(params)
@@ -360,12 +422,18 @@ const loadPosts = async (page = 1) => {
       
       const list = pageData.data || []
       
-      const processedList: FeedPost[] = list.map((item: PostItemData) => ({
-        ...item,
-        isExpanded: false,
-        isLiked: false,
-        showComments: false
-      }))
+      const processedList: FeedPost[] = list.map((item: PostItemData) => {
+        const raw = item as unknown as { isLiked?: boolean; isFavorited?: boolean; postItem?: { isLiked?: boolean; isFavorited?: boolean } }
+        const initialIsLiked = Boolean(raw.isLiked ?? raw.postItem?.isLiked)
+        const initialIsFavorited = Boolean(raw.isFavorited ?? raw.postItem?.isFavorited)
+        return {
+          ...item,
+          isExpanded: false,
+          isLiked: initialIsLiked,
+          isFavorited: initialIsFavorited,
+          showComments: false
+        }
+      })
       
       if (page === 1) {
         postList.value = processedList
@@ -384,8 +452,11 @@ const loadPosts = async (page = 1) => {
       
       currentPage.value = page
     }
-  } catch (error) {
-    // 加载失败
+  } catch (error: any) {
+    if (props.activeTab === 'following' && error?.response?.status === 401) {
+      ElMessage.warning('请先登录以查看关注内容')
+      emit('update:activeTab', 'latest')
+    }
   } finally {
     loading.value = false
   }

@@ -9,11 +9,11 @@ export const SharePlatform = {
   OTHER: 'other'
 } as const
 
-type SharePlatformValue = (typeof SharePlatform)[keyof typeof SharePlatform]
+export type SharePlatformValue = (typeof SharePlatform)[keyof typeof SharePlatform]
 
 export function sharePost(data: {
   postId: number
-  platform?: SharePlatformValue
+  platform?: SharePlatformValue | string
 }): Promise<ApiResponse> {
   return request({
     url: '/share',

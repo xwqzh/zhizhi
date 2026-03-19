@@ -37,7 +37,7 @@ export interface UserDetail {
  * 用户简要信息
  * 对应后端: UserBriefVO.java
  */
-export interface UserBrief {
+interface UserBrief {
   id: number
   username: string
   nickname: string
@@ -302,7 +302,7 @@ export interface FollowUser {
  * 点赞状态
  * 对应后端: LikeStatusVO.java
  */
-export interface LikeStatus {
+interface LikeStatus {
   targetId: number
   targetType: number
   isLiked: boolean

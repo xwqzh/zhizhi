@@ -86,6 +86,8 @@ public class PostConverter {
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
                 .favoriteCount(post.getFavoriteCount())
+                .shareCount(post.getShareCount())
+                .isFeatured(post.isFeaturedPost())
                 .createTime(post.getCreateTime())
                 .updateTime(post.getUpdateTime())
                 .tagNameList(tagNames)

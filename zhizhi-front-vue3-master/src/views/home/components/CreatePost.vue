@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, unref, watch, nextTick, computed } from 'vue'
+import { ref, unref, watch, nextTick } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import type { PopoverInstance } from 'element-plus'
@@ -102,15 +102,12 @@ interface ImageItem {
   file: File
 }
 
-interface EmojiData {
-  i: string
-  [key: string]: unknown
-}
-
 // 定义 emit
 const emit = defineEmits<{
   'post-published': [data: unknown]
 }>()
+
+const userStore = useUserStore()
 
 // 状态管理
 const content = ref('')
@@ -160,11 +157,11 @@ const fetchTags = async () => {
   }
 }
 
-const addEmoji = (emoji: EmojiData | string) => {
+const addEmoji = (emoji: any) => {
   if (typeof emoji === 'string') {
     content.value += emoji
   } else {
-    content.value += emoji.i
+    content.value += emoji?.i || ''
   }
 }
 
@@ -176,7 +173,7 @@ watch(tagSearchText, () => {
 const linkTagBtn = ref<HTMLElement | null>(null)
 const popoverRef = ref<PopoverInstance | null>(null)
 const toggleTagSelect = () => {
-  unref(popoverRef)?.popperRef?.delayHide?.()
+  ;(unref(popoverRef)?.popperRef as any)?.delayHide?.()
   showTagSearch.value = !showTagSearch.value
   if (showTagSearch.value) {
     fetchTags()
@@ -241,25 +238,49 @@ const removeImage = (index: number) => {
   imageList.value.splice(index, 1)
 }
 
+// 根据正文自动生成标题，满足后端标题必填校验
+const generatePostTitle = (text: string): string => {
+  const firstNonEmptyLine =
+    text
+      .replace(/\r\n/g, '\n')
+      .split('\n')
+      .map((line) => line.trim())
+      .find((line) => line.length > 0) || text.trim()
+
+  const normalized = firstNonEmptyLine.replace(/\s+/g, ' ')
+  return normalized.length > 100 ? normalized.substring(0, 100) : normalized
+}
+
 // 发布帖子
 const publish = async () => {
-  const userStore = useUserStore()
   if (!userStore.isAuthenticated) {
     ElMessage.warning('请先登录')
     return
   }
 
-  if (!content.value.trim()) {
+  const normalizedContent = content.value.trim()
+  if (!normalizedContent) {
     ElMessage.warning('请输入内容')
+    return
+  }
+
+  if (selectedTags.value.length === 0) {
+    ElMessage.warning('请至少选择一个标签')
+    return
+  }
+
+  const generatedTitle = generatePostTitle(normalizedContent)
+  if (!generatedTitle) {
+    ElMessage.warning('请完善帖子内容')
     return
   }
 
   publishing.value = true
   try {
     const postData = {
-      title: '', // 短帖子不需要标题
+      title: generatedTitle,
       content: content.value,
-      description: content.value.substring(0, 200),
+      description: normalizedContent.substring(0, 200),
       type: 'POST',
       status: 'PUBLISHED',
       tagIds: selectedTags.value.map(t => t.id),

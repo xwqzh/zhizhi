@@ -10,19 +10,25 @@ export const PostStatus = {
 
 export const SortType = {
   LATEST: 'latest',
-  HOTTEST: 'hottest',
+  HOTTEST: 'hot',
   COMMENTS: 'comments',
   LIKES: 'likes',
   FAVORITES: 'favorites'
 } as const
 
 interface PostCreateData {
+  id?: number
   title: string
   content: string
   description?: string
   coverUrl?: string
   tagIds?: number[]
   status?: string
+}
+
+export type PostCreateRequest = PostCreateData
+export interface PostUpdateRequest extends PostCreateData {
+  id: number
 }
 
 interface PostListParams {
@@ -36,7 +42,7 @@ interface PostListParams {
 }
 
 interface PostSearchParams {
-  keyword: string
+  keyword?: string
   pageNo?: number
   pageSize?: number
   types?: string[]

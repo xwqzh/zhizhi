@@ -25,6 +25,7 @@
     "checkJs": false,
     "noImplicitAny": false,
     "strictNullChecks": false,
+    "useUnknownInCatchVariables": false,
 
     /* Path Aliases */
     "baseUrl": ".",
@@ -40,8 +41,7 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "src/**/*.js",
-    "src/**/*.jsx",
-    "vite.config.ts"
+    "src/**/*.jsx"
   ],
   "exclude": ["node_modules", "dist"],
   "references": [{ "path": "./tsconfig.node.json" }]

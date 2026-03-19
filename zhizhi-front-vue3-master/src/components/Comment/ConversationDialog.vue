@@ -89,7 +89,7 @@ const fetchConversation = async () => {
   try {
     const response = await getConversationChain(props.replyId)
     if (response.code === 20000 && response.data) {
-      chain.value = response.data.map((item: ConversationChainItem) => ({
+      chain.value = (response.data as unknown as ConversationChainItem[]).map((item) => ({
         ...item,
         formattedTime: formatTime(item.createTime)
       }))

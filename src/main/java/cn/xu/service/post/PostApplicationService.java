@@ -117,7 +117,15 @@ public class PostApplicationService {
         // 首次请求时返回总数
         Long total = null;
         if (request.getCursor() == null || request.getCursor().isEmpty()) {
-            total = postStatisticsService.countAll();
+            if ("hot".equalsIgnoreCase(sortBy)) {
+                total = tagId != null
+                        ? postStatisticsService.countHotByTagId(tagId)
+                        : postStatisticsService.countHot();
+            } else {
+                total = tagId != null
+                        ? postStatisticsService.countByTagId(tagId)
+                        : postStatisticsService.countAll();
+            }
         }
         
         return CursorPageResponse.of(result, nextCursor, hasMore, limit, total);

@@ -1,3 +1,5 @@
+package cn.xu.controller.web;
+
 import cn.xu.common.ResponseCode;
 import cn.xu.common.annotation.ApiOperationLog;
 import cn.xu.common.response.ResponseEntity;

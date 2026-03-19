@@ -60,12 +60,13 @@ interface PostTag {
 
 interface PostData {
   title?: string
-  content?: string
+  content?: any
+  contentValue?: string
   createTime?: string
   viewCount?: number
   author?: PostAuthor
   user?: PostUser
-  tags?: (PostTag | string)[]
+  tags?: any[]
 }
 
 interface Props {

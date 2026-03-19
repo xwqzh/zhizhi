@@ -15,7 +15,7 @@ export enum PostStatus {
  */
 export enum SortType {
   LATEST = 'latest',
-  HOTTEST = 'hottest',
+  HOTTEST = 'hot',
   COMMENTS = 'comments',
   LIKES = 'likes',
   FAVORITES = 'favorites'
@@ -38,11 +38,18 @@ export interface Post {
   commentCount: number
   favoriteCount: number
   shareCount: number
-  tags: Tag[]
+  tags: Array<Tag | string>
   isLiked: boolean
   isFavorited: boolean
   createdAt: string
   updatedAt: string
+  createTime?: string
+  updateTime?: string
+  authorName?: string
+  formattedContent?: string
+  contentValue?: string
+  post?: Post
+  [key: string]: any
 }
 
 /**

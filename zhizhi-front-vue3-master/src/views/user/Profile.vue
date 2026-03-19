@@ -142,7 +142,7 @@ import ColumnsTab from './components/tabs/ColumnsTab.vue'
 const route = useRoute()
 const userStore = useUserStore()
 
-const userId = computed(() => route.params.userId as string)
+const userId = computed(() => Number(route.params.userId || 0))
 
 // 使用 composable 管理数据
 const {

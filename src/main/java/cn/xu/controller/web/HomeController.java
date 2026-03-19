@@ -6,14 +6,11 @@ import cn.xu.common.annotation.ApiOperationLog;
 import cn.xu.common.response.PageResponse;
 import cn.xu.common.response.ResponseEntity;
 import cn.xu.model.entity.Post;
-import cn.xu.model.entity.User;
-import cn.xu.model.vo.post.PostItemVO;
 import cn.xu.model.vo.post.PostListVO;
 import cn.xu.service.follow.FollowService;
+import cn.xu.service.post.PostConverter;
 import cn.xu.service.post.PostQueryService;
 import cn.xu.service.post.PostStatisticsService;
-import cn.xu.service.post.TagService;
-import cn.xu.service.user.UserService;
 import cn.xu.support.util.LoginUserUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,10 +38,8 @@ public class HomeController {
     private PostQueryService postQueryService;
     @Resource
     private PostStatisticsService postStatisticsService;
-    @Resource(name = "tagService")
-    private TagService tagService;
-    @Resource(name = "userService")
-    private UserService userService;
+    @Resource
+    private PostConverter postConverter;
     @Resource
     private FollowService followService;
 
@@ -228,35 +223,6 @@ public class HomeController {
      * @return 帖子VO列表，包含用户信息和统计数据
      */
     private List<PostListVO> convert(List<Post> posts) {
-        if (posts == null || posts.isEmpty()) return Collections.emptyList();
-        Set<Long> userIds = new HashSet<>();
-        posts.forEach(p -> { if (p.getUserId() != null) userIds.add(p.getUserId()); });
-        List<User> users = Collections.emptyList();
-        try { 
-            Map<Long, User> tempMap = userService.batchGetUserInfo(new ArrayList<>(userIds));
-            users = new ArrayList<>(tempMap.values());
-        } catch (Exception e) { log.warn("batchGetUserInfo failed", e); }
-        Map<Long, User> userMap = users.stream().collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
-        return posts.stream().map(post -> {
-            User user = post.getUserId() != null ? userMap.get(post.getUserId()) : null;
-            PostItemVO item = PostItemVO.builder()
-                    .id(post.getId())
-                    .title(post.getTitle())
-                    .description(post.getDescription())
-                    .content(post.getContent())
-                    .coverUrl(post.getCoverUrl())
-                    .status(post.getStatus())
-                    .userId(post.getUserId())
-                    .nickname(user != null ? user.getNickname() : null)
-                    .avatar(user != null ? user.getAvatar() : null)
-                    .viewCount(post.getViewCount())
-                    .likeCount(post.getLikeCount())
-                    .commentCount(post.getCommentCount())
-                    .favoriteCount(post.getFavoriteCount())
-                    .createTime(post.getCreateTime())
-                    .updateTime(post.getUpdateTime())
-                    .build();
-            return PostListVO.builder().postItem(item).build();
-        }).collect(Collectors.toList());
+        return postConverter.toListVOs(posts);
     }
 }

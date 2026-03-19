@@ -6,7 +6,7 @@
         <!-- 顶部工具栏 -->
         <div class="top-toolbar">
           <!-- 标签筛选 -->
-          <div class="tag-filter-wrapper">
+          <div v-if="!isFollowingTab" class="tag-filter-wrapper">
             <div class="tag-filter" :class="{ 'is-expanded': tagFilterExpanded }">
               <el-tag 
                 :type="!selectedTagId ? 'primary' : 'info'"
@@ -65,6 +65,7 @@
           ref="postListRef"
           :active-tab="activeTab"
           :tag-id="selectedTagId"
+          @update:active-tab="handleActiveTabUpdate"
         />
         
         <!-- 沉浸模式 -->
@@ -73,6 +74,7 @@
           ref="postFeedListRef"
           :active-tab="activeTab"
           :tag-id="selectedTagId"
+          @update:active-tab="handleActiveTabUpdate"
         />
       </div>
 
@@ -117,6 +119,7 @@ const TAG_MAX_COUNT = 30        // 展开后最大显示数
 
 // ==================== 响应式数据 ====================
 const activeTab = computed(() => (route.query.tab as string) || 'latest')
+const isFollowingTab = computed(() => activeTab.value === 'following')
 const hotTags = ref<Tag[]>([])
 const viewMode = ref(localStorage.getItem('homeViewMode') || 'list')
 const postListRef = ref<PostListInstance | null>(null)
@@ -152,6 +155,10 @@ const handlePostPublished = () => {
   } else {
     postListRef.value?.refresh?.()
   }
+}
+
+const handleActiveTabUpdate = (tab: string) => {
+  router.push({ path: '/', query: { tab } })
 }
 
 // 标签筛选

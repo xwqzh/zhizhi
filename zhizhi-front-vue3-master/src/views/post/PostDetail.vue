@@ -171,7 +171,7 @@ interface PostTag {
 interface PostData {
   id: number
   title?: string
-  content?: string
+  content?: any
   createTime?: string
   viewCount?: number
   likeCount?: number
@@ -184,7 +184,8 @@ interface PostData {
   isFeatured?: boolean
   author?: PostAuthor
   user?: PostAuthor
-  tags?: PostTag[]
+  tags?: any[]
+  [key: string]: any
 }
 
 interface RelatedPost {
@@ -226,7 +227,7 @@ const isFollowingLoading = ref(false)
 const isLiking = ref(false)
 
 // 计算属性
-const postId = computed(() => route.params.id as string)
+const postId = computed(() => Number(route.params.id || 0))
 
 // 作者信息
 const author = computed((): AuthorInfo => {
@@ -308,46 +309,34 @@ const loadRelatedPosts = async (): Promise<void> => {
   }
   
   try {
-    // 调用API获取相关推荐帖子（不再使用type参数）
-    const response = await getRelatedPosts({
+    // 调用API获取相关推荐帖子
+    const response: any = await getRelatedPosts({
       excludeId: post.value.id,
       page: 1,
       size: 5
     })
-    
-    // 处理响应数据 - 支持 PageResponse 结构
-    if (response && response.data && response.data.data && Array.isArray(response.data.data)) {
-      // 处理新的PageResponse结构
-      relatedPosts.value = response.data.data.map(item => {
-        // 确保item和item.post存在
-        if (!item || !item.post) {
+
+    const rawList = Array.isArray(response?.data?.data)
+      ? response.data.data
+      : (Array.isArray(response?.data) ? response.data : [])
+
+    relatedPosts.value = rawList
+      .map((item: any) => {
+        // 后端标准结构是 PostListVO.postItem，这里兼容 post 和直出对象
+        const source = item?.postItem || item?.post || item
+        if (!source || !source.id) {
           return null
         }
+
+        const rawTitle = source.titleValue || source?.title?.title || source.title
         return {
-          id: item.post.id,
-          title: item.post.titleValue || (item.post.title && (item.post.title.title || item.post.title)) || '无标题',
-          viewCount: item.post.viewCount || 0,
-          commentCount: item.post.commentCount || 0
-        }
-      }).filter(item => item && item.id) // 过滤掉无效数据
-    } else if (response && response.data && Array.isArray(response.data)) {
-      // 容错：直接返回数组的情况
-      relatedPosts.value = response.data.map(item => {
-        // 确保item和item.post存在
-        if (!item || !item.post) {
-          return null
-        }
-        return {
-          id: item.post.id,
-          title: item.post.titleValue || (item.post.title && (item.post.title.title || item.post.title)) || '无标题',
-          viewCount: item.post.viewCount || 0,
-          commentCount: item.post.commentCount || 0
-        }
-      }).filter(item => item && item.id) // 过滤掉无效数据
-    } else {
-      // 如果没有获取到相关推荐，清空数组
-      relatedPosts.value = []
-    }
+          id: Number(source.id),
+          title: (typeof rawTitle === 'string' && rawTitle.trim()) ? rawTitle : '无标题',
+          viewCount: Number(source.viewCount) || 0,
+          commentCount: Number(source.commentCount) || 0
+        } as RelatedPost
+      })
+      .filter((item): item is RelatedPost => Boolean(item && item.id))
   } catch (error) {
     // 出错时清空推荐列表
     relatedPosts.value = []
@@ -894,8 +883,6 @@ onMounted(() => {
 .tag-item {
   border-radius: 4px;
 }
-</style>
-
 
 /* 专栏信息区域 */
 .column-info-section {
@@ -903,3 +890,4 @@ onMounted(() => {
   padding-top: 32px;
   border-top: 1px solid #ebeef5;
 }
+</style>

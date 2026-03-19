@@ -51,10 +51,11 @@ export interface CodeLoginCredentials {
 /**
  * 登录响应
  */
-export interface LoginResponse {
+export interface LoginResponse extends User {
   token: string
-  user: User
+  user?: User
   userInfo?: User
+  remainingAttempts?: number
 }
 
 /**

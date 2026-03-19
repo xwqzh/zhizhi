@@ -150,14 +150,14 @@ const removeImage = async (index: number) => {
   images.value.splice(index, 1)
 }
 
-const handleSubmit = (event?: KeyboardEvent) => {
+const handleSubmit = (event?: Event) => {
   if (!userStore.isAuthenticated) {
     ElMessage.warning('请先登录')
     window.dispatchEvent(new CustomEvent('show-login-dialog'))
     return
   }
 
-  if (event && event.shiftKey) return
+  if (event && (event as KeyboardEvent).shiftKey) return
   if (!content.value.trim() && images.value.length === 0) {
     ElMessage.warning('评论内容不能为空')
     return

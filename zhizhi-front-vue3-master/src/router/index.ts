@@ -120,7 +120,7 @@ const routes: RouteRecordRaw[] = [
     path: '/user/:userId',
     name: RouteNames.PROFILE,
     component: () => import('@/views/user/Profile.vue'),
-    meta: { title: '个人主页', requireAuth: true }
+    meta: { title: '个人主页' }
   },
   {
     path: '/message',

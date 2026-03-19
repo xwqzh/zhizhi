@@ -3,7 +3,7 @@ import type { ApiResponse, User, LoginResponse } from '@/types'
 
 interface SendVerifyCodeData {
   email: string
-  scene?: 'register' | 'forgot' | 'bind'
+  scene?: 'register' | 'forgot' | 'bind' | 'login'
 }
 
 interface RegisterData {

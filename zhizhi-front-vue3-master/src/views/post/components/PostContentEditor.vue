@@ -97,7 +97,7 @@ const handleModeChange = (val: EditorMode): void => {
   emit('update:mode', val)
 }
 
-const toolbars = [
+const toolbars: any = [
   'bold',
   'underline',
   'italic',

@@ -114,7 +114,7 @@ const loadPosts = async (append = false) => {
   try {
     const res = await getTagPosts(tagId.value, page.value, pageSize)
     if (res.code === 20000 && res.data) {
-      const newPosts = res.data.records || res.data.data || []
+      const newPosts = (res.data.records || res.data.data || []) as Post[]
       if (append) {
         posts.value = [...posts.value, ...newPosts]
       } else {

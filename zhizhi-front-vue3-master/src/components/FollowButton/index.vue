@@ -80,7 +80,7 @@ const fetchFollowStatus = async () => {
 
   try {
     loading.value = true
-    const res = await checkFollowing(props.userId)
+    const res = await checkFollowing(Number(props.userId))
     if (res.code === 20000) {
       if (typeof res.data === 'object' && res.data !== null) {
         const data = res.data as { isFollowing?: boolean; following?: boolean; isMutual?: boolean; mutual?: boolean }
@@ -104,7 +104,7 @@ const handleClick = async () => {
     loading.value = true
 
     if (isFollowing.value) {
-      const res = await unfollowUser(props.userId)
+      const res = await unfollowUser(Number(props.userId))
       if (res.code === 20000) {
         isFollowing.value = false
         isMutual.value = false
@@ -113,7 +113,7 @@ const handleClick = async () => {
         emit('change', { following: false, mutual: false })
       }
     } else {
-      const res = await followUser(props.userId)
+      const res = await followUser(Number(props.userId))
       if (res.code === 20000) {
         isFollowing.value = true
         const data = res.data as { isMutual?: boolean; mutual?: boolean } | null

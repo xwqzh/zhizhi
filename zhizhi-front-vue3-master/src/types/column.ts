@@ -38,6 +38,7 @@ export interface ColumnVO {
   status: ColumnStatus
   postCount: number
   subscribeCount: number
+  isRecommended?: number
   isSubscribed: boolean
   lastPostTime?: string
   createTime: string
@@ -121,6 +122,7 @@ export interface ColumnSearchQuery {
 // 分页响应
 export interface PageResult<T> {
   list: T[]
+  data?: T[]
   total: number
   page: number
   size: number

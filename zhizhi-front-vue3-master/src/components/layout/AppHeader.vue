@@ -296,11 +296,6 @@ interface LoginDialogControl {
   value: Ref<boolean>
 }
 
-interface PrivateMessageData {
-  type: string
-  [key: string]: unknown
-}
-
 const userStore = useUserStore()
 const router = useRouter()
 const route = useRoute()
@@ -345,7 +340,7 @@ const handleUnreadCountUpdate = (count: number) => {
   notificationUnread.value = count
 }
 
-const handlePrivateMessageUpdate = (data: PrivateMessageData) => {
+const handlePrivateMessageUpdate = (data: any) => {
   if (data.type === 'private_message') {
     messageUnread.value++
   }

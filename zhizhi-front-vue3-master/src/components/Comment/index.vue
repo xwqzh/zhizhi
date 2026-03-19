@@ -130,7 +130,7 @@ import {
   deleteComment,
   CommentType
 } from '@/api/comment'
-import { like, unlike } from '@/api/like'
+import { like, unlike, LikeType } from '@/api/like'
 import { formatTime } from '@/utils/time'
 import ReportDialog from '@/components/ReportDialog.vue'
 import { ReportTargetType } from '@/api/report'
@@ -165,7 +165,7 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const hasMoreComments = ref(true)
 const loading = ref(false)
-const currentSort = ref('NEW')
+const currentSort = ref<'HOT' | 'TIME' | 'NEW'>('NEW')
 const serverTotalCount = ref(0)
 
 // 回复相关
@@ -282,8 +282,9 @@ const fetchComments = async () => {
 
 // 排序切换
 const handleSortChange = (sortValue: string) => {
-  if (currentSort.value !== sortValue) {
-    currentSort.value = sortValue
+  const nextSort = sortValue as 'HOT' | 'TIME' | 'NEW'
+  if (currentSort.value !== nextSort) {
+    currentSort.value = nextSort
     currentPage.value = 1
     comments.value = []
     hasMoreComments.value = true
@@ -333,7 +334,7 @@ const handleCommentLike = async (comment: CommentItemType) => {
 
   try {
     const action = comment.isLiked ? unlike : like
-    const response = await action({ targetId: comment.id, type: 'COMMENT' }) as any
+    const response = await action({ targetId: comment.id, type: LikeType.COMMENT }) as any
 
     if (response.code === 20000) {
       const newLikedStatus = !comment.isLiked

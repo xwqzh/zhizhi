@@ -12,6 +12,7 @@ export const useUserStore = defineStore('user', () => {
   const userInfo = ref<User | null>(null)
 
   const isAuthenticated = computed(() => !!token.value && !!userInfo.value)
+  const isLoggedIn = computed(() => isAuthenticated.value)
   const getUserAuth = computed(() => isAuthenticated.value)
   const getUserInfo = computed(() => userInfo.value)
   const userId = computed(() => userInfo.value?.id || null)
@@ -122,6 +123,7 @@ export const useUserStore = defineStore('user', () => {
     token,
     userInfo,
     isAuthenticated,
+    isLoggedIn,
     getUserAuth,
     getUserInfo,
     userId,

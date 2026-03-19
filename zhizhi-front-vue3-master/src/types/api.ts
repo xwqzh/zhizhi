@@ -1,11 +1,11 @@
-/**
- * API 响应相关类型定义
+﻿/**
+ * API response related types
  */
 
 /**
- * API 响应基础结构
+ * Base API response envelope
  */
-export interface ApiResponse<T = unknown> {
+export interface ApiResponse<T = any> {
   code: number
   info: string | null
   message?: string
@@ -13,26 +13,36 @@ export interface ApiResponse<T = unknown> {
 }
 
 /**
- * API 错误
- */
-export interface ApiError {
-  silent?: boolean
-  message: string
-  code?: number
-}
-
-/**
- * 分页响应数据
+ * Paged response data
  */
 export interface PageResponse<T> {
-  pageNo: number
-  pageSize: number
-  total: number
-  data: T
+  pageNo?: number
+  pageSize?: number
+  total?: number
+  page?: number
+  size?: number
+  pages?: number
+  data: T | any[]
+  list?: any[]
+  records?: any[]
+  [key: string]: any
 }
 
 /**
- * 列表响应数据（旧版本兼容）
+ * Cursor pagination response
+ */
+export interface CursorResponse<T> {
+  list?: T[]
+  data?: T[]
+  nextCursor?: string | null
+  cursor?: string | null
+  hasMore?: boolean
+  total?: number
+  [key: string]: any
+}
+
+/**
+ * List response data (legacy compatibility)
  */
 export interface ListResponse<T> {
   list: T
@@ -42,7 +52,7 @@ export interface ListResponse<T> {
 }
 
 /**
- * 上传响应
+ * Upload response
  */
 export interface UploadResponse {
   code: number
@@ -51,7 +61,7 @@ export interface UploadResponse {
 }
 
 /**
- * 表单验证规则
+ * Form validation rule
  */
 export interface FormRule {
   required?: boolean
@@ -65,7 +75,7 @@ export interface FormRule {
 }
 
 /**
- * Element Plus 表单实例
+ * Element Plus form instance
  */
 export interface FormInstance {
   validate: () => Promise<boolean>
@@ -75,7 +85,7 @@ export interface FormInstance {
 }
 
 /**
- * 收藏夹项目
+ * Favorite item
  */
 export interface FavoriteItem {
   id: number
@@ -89,7 +99,7 @@ export interface FavoriteItem {
     commentCount: number
     createTime: string
   }
-  // 兼容旧数据结构
+  // Backward-compatible fields
   title?: string
   description?: string
   coverUrl?: string
@@ -100,7 +110,7 @@ export interface FavoriteItem {
 }
 
 /**
- * 收藏夹响应
+ * Favorite response
  */
 export interface FavoriteResponse {
   list: FavoriteItem[]
@@ -108,7 +118,7 @@ export interface FavoriteResponse {
 }
 
 /**
- * 对话链响应项
+ * Conversation chain item
  */
 export interface ConversationChainItem {
   id: number

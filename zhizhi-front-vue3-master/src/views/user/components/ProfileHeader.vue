@@ -176,11 +176,12 @@ const beforeAvatarUpload = (file: File): boolean => {
 const handleAvatarUpload = async (options: { file: File }) => {
   try {
     avatarUploading.value = true
-    const response = await uploadAvatar(options.file) as ApiResponse<string>
+    const response = await uploadAvatar(options.file) as ApiResponse<{ url: string } | string>
     
     if (response.code === 20000 && response.data) {
       ElMessage.success('头像上传成功!')
-      emit('avatar-updated', response.data)
+      const avatarUrl = typeof response.data === 'string' ? response.data : response.data.url
+      emit('avatar-updated', avatarUrl)
     } else {
       ElMessage.error(response.info || '头像上传失败')
     }

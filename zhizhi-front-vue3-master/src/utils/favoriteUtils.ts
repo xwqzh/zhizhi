@@ -36,7 +36,7 @@ export const checkFavoritesBatch = async (
 
   try {
     const checkItems = items.map((item) => ({
-      targetId: item.targetId,
+      targetId: Number(item.targetId),
       targetType: item.targetType || item.type
     }))
 

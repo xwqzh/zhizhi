@@ -71,12 +71,11 @@ export function getHotPosts(params: HomePostParams): Promise<ApiResponse<PageRes
   return requestFn()
 }
 
-export function getRelatedPosts(params: HomePostParams): Promise<ApiResponse<Post[]>> {
+export function getRelatedPosts(params: HomePostParams): Promise<ApiResponse<PageResponse<Post[]>>> {
   return request({
     url: '/home/related',
     method: 'get',
     params: {
-      type: params.type,
       excludeId: params.excludeId,
       page: params.page || 1,
       size: params.size || 5
@@ -90,7 +89,7 @@ export function clearHomeCache(): void {
 
 export const SortType = {
   LATEST: 'latest',
-  HOTTEST: 'hottest',
+  HOTTEST: 'hot',
   COMMENTS: 'comments',
   LIKES: 'likes',
   FAVORITES: 'favorites'

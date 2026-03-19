@@ -23,7 +23,7 @@ interface CommentListParams {
   targetId: number
   pageNo?: number
   pageSize?: number
-  sortType?: 'HOT' | 'TIME' | 'NEW'
+  sortType?: 'HOT' | 'TIME' | 'NEW' | 'hot' | 'time' | 'new'
 }
 
 export function getCommentPage(data: CommentListParams): Promise<ApiResponse<PageResponse<Comment>>> {
@@ -34,6 +34,7 @@ export function getReplyPage(data: {
   parentId: number
   pageNo?: number
   pageSize?: number
+  sortType?: 'HOT' | 'TIME' | 'NEW' | 'hot' | 'time' | 'new'
 }): Promise<ApiResponse<PageResponse<Comment>>> {
   return request({ url: '/comment/reply/list', method: 'post', data })
 }

@@ -90,9 +90,9 @@
     <!-- 编辑专栏对话框 -->
     <ColumnFormDialog
       v-if="showEditDialog"
-      :visible="showEditDialog"
+      :model-value="showEditDialog"
       :column="column"
-      @close="showEditDialog = false"
+      @update:model-value="showEditDialog = $event"
       @success="handleEditSuccess"
     />
 

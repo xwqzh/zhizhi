@@ -85,7 +85,7 @@ interface PostData {
   description?: string
   createTime?: string
   coverUrl?: string
-  tags?: (PostTag | string)[]
+  tags?: any[]
 }
 
 interface Props {
@@ -109,7 +109,7 @@ const userStore = useUserStore()
 
 // 当前用户信息
 const currentUser = computed(() => {
-  const userInfo = userStore.userInfo || {}
+  const userInfo: any = userStore.userInfo || {}
   return {
     id: userInfo.id || 0,
     name: userInfo.nickname || userInfo.username || '未登录用户',

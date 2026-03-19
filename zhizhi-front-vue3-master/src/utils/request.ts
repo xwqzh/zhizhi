@@ -55,7 +55,7 @@ service.interceptors.request.use(
 
 
 // 响应拦截器
-service.interceptors.response.use(
+;(service.interceptors.response as any).use(
   (response) => {
     const res = response.data as ApiResponse
 
@@ -123,8 +123,9 @@ service.interceptors.response.use(
 /**
  * 泛型请求函数
  */
-export function request<T = unknown>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-  return service.request(config)
+export function request<T = any>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  return service.request(config) as Promise<ApiResponse<T>>
 }
 
-export default service
+export default request
+export { service }

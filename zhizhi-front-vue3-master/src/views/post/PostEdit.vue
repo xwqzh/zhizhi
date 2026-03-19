@@ -1366,44 +1366,41 @@ const uploadImages = async (files: File[]): Promise<string[]> => {
     width: 100%;
   }
 }
-</style>
-
 
 /* 专栏选择区域样式 */
-.column-select-area {
-  .selected-columns {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 12px;
-    padding: 12px;
-    background: #f5f7fa;
-    border-radius: 4px;
-  }
-
-  .selected-label {
-    font-size: 14px;
-    color: #606266;
-    font-weight: 500;
-  }
-
-  .column-tag {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    .tag-icon {
-      font-size: 14px;
-    }
-  }
-
-  .no-columns-tip {
-    padding: 12px;
-    background: #f5f7fa;
-    border-radius: 4px;
-    color: #909399;
-    font-size: 14px;
-    margin-bottom: 12px;
-  }
+.column-select-area .selected-columns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 4px;
 }
+
+.column-select-area .selected-label {
+  font-size: 14px;
+  color: #606266;
+  font-weight: 500;
+}
+
+.column-select-area .column-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.column-select-area .column-tag .tag-icon {
+  font-size: 14px;
+}
+
+.column-select-area .no-columns-tip {
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 4px;
+  color: #909399;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+</style>

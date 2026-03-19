@@ -82,8 +82,8 @@ const handleSend = () => {
   inputMessage.value = ''
 }
 
-const addEmoji = (emoji: string) => {
-  inputMessage.value += emoji
+const addEmoji = (emoji: any) => {
+  inputMessage.value += typeof emoji === 'string' ? emoji : emoji?.i || ''
   showEmojiPicker.value = false
 }
 

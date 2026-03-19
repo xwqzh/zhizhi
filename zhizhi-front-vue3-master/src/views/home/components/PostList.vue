@@ -107,8 +107,6 @@ const {
   PriceTag, 
   View, 
   ChatDotRound, 
-  Like, 
-  LikeFilled, 
   Star, 
   StarFilled, 
   Share,
@@ -124,7 +122,6 @@ defineOptions({
 })
 
 interface Props {
-  categoryId?: number
   type?: string
   activeTab?: string
   tagId?: number
@@ -154,7 +151,7 @@ interface PostItem {
 }
 
 // 响应类型定义
-interface PostListResponse {
+interface PostListResponse extends Array<PostItem> {
   pageNo?: number
   pageSize?: number
   total?: number
@@ -170,9 +167,8 @@ interface CursorPostListResponse {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  categoryId: undefined,
   type: 'all',
-  activeTab: 'recommend',
+  activeTab: 'latest',
   tagId: undefined
 })
 
@@ -262,7 +258,7 @@ const loadPosts = async (page = 1, type: string | null = null) => {
 
   if (props.activeTab === 'following' && !userStore.isAuthenticated) {
     ElMessage.warning('请先登录以查看关注内容')
-    emits('update:activeTab', 'recommend')
+    emits('update:activeTab', 'latest')
     return
   }
 
@@ -275,7 +271,6 @@ const loadPosts = async (page = 1, type: string | null = null) => {
             response = await getFeaturedPosts({
               page: page,
               size: pageSize.value,
-              categoryId: props.categoryId,
               tagId: props.tagId
             })
             break
@@ -285,7 +280,6 @@ const loadPosts = async (page = 1, type: string | null = null) => {
               sort: 'latest',
               page: page,
               size: pageSize.value,
-              categoryId: props.categoryId,
               tagId: props.tagId
             })
             break
@@ -295,7 +289,6 @@ const loadPosts = async (page = 1, type: string | null = null) => {
               sort: 'latest',
               page: page,
               size: pageSize.value,
-              categoryId: props.categoryId,
               tagId: props.tagId
             })
             break
@@ -309,9 +302,7 @@ const loadPosts = async (page = 1, type: string | null = null) => {
           case 'following':
             response = await getFollowingPosts({
               page: page,
-              size: pageSize.value,
-              categoryId: props.categoryId,
-              tagId: props.tagId
+              size: pageSize.value
             })
             break
           default:
@@ -320,7 +311,6 @@ const loadPosts = async (page = 1, type: string | null = null) => {
               sort: 'latest',
               page: page,
               size: pageSize.value,
-              categoryId: props.categoryId,
               tagId: props.tagId
             })
         }
@@ -398,7 +388,7 @@ const loadPosts = async (page = 1, type: string | null = null) => {
   } catch (error: any) {
     if (props.activeTab === 'following' && error.response && error.response.status === 401) {
       ElMessage.warning('请先登录以查看关注内容')
-      emits('update:activeTab', 'recommend')
+      emits('update:activeTab', 'latest')
     } else {
       if (page === 1) {
         posts.value = []

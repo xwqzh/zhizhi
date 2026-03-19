@@ -9,6 +9,7 @@ export interface UserInfo {
   id: number
   username: string
   nickname: string
+  name?: string
   avatar: string | null
   email?: string
   phone?: string
@@ -47,7 +48,7 @@ export interface UserProfileResponse {
 /**
  * 修改密码请求
  */
-export interface ChangePasswordRequest {
+interface ChangePasswordRequest {
   oldPassword: string
   newPassword: string
   confirmPassword: string

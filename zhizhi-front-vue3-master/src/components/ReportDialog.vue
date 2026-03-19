@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, defineExpose } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules, UploadFile, UploadRawFile } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'

@@ -208,3 +208,20 @@ export const getUserSubscriptions = (page = 1, size = 20) => {
     params: { page, size },
   })
 }
+
+/**
+ * 鑾峰彇涓撴爮缁熻鏁版嵁
+ */
+export interface ColumnStatistics {
+  dates: string[]
+  viewCounts: number[]
+  subscribeCounts: number[]
+}
+
+export const getColumnStatistics = (columnId: number, days = 30) => {
+  return request<ColumnStatistics>({
+    url: `/columns/${columnId}/statistics`,
+    method: 'GET',
+    params: { days },
+  })
+}
