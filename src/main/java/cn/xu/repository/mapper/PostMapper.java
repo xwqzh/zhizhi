@@ -211,6 +211,14 @@ public interface PostMapper {
                                 @Param("limit") int limit);
 
     /**
+     * 根据标签ID和排序方式查询帖子列表
+     */
+    List<Post> findPostsByTagIdWithSort(@Param("tagId") Long tagId,
+                                        @Param("sort") String sort,
+                                        @Param("offset") int offset,
+                                        @Param("limit") int limit);
+
+    /**
      * 统计指定标签的帖子数量
      */
     Long countPostsByTagId(@Param("tagId") Long tagId);

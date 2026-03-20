@@ -86,7 +86,7 @@ const router = useRouter()
 const tagId = ref<number>(0)
 const tagStats = ref<TagStatsData | null>(null)
 const posts = ref<Post[]>([])
-const sortBy = ref('latest')
+const sortBy = ref<'latest' | 'likes' | 'views'>('latest')
 const page = ref(1)
 const pageSize = 20
 const hasMore = ref(true)
@@ -112,7 +112,7 @@ const loadPosts = async (append = false) => {
   if (!tagId.value) return
   postsLoading.value = true
   try {
-    const res = await getTagPosts(tagId.value, page.value, pageSize)
+    const res = await getTagPosts(tagId.value, page.value, pageSize, sortBy.value)
     if (res.code === 20000 && res.data) {
       const newPosts = (res.data.records || res.data.data || []) as Post[]
       if (append) {

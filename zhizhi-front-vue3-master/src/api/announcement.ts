@@ -6,14 +6,16 @@ interface Announcement {
   title: string
   content: string
   type: number
-  createdAt: string
+  createTime: string
 }
 
-export function getAnnouncementList(params: { pageNo?: number; pageSize?: number } = {}): Promise<ApiResponse<PageResponse<Announcement>>> {
+export function getAnnouncementList(params: { pageNo?: number; pageSize?: number; page?: number; size?: number } = {}): Promise<ApiResponse<PageResponse<Announcement>>> {
+  const page = params.pageNo ?? params.page ?? 1
+  const size = params.pageSize ?? params.size ?? 10
   return request({
     url: '/announcements',
     method: 'get',
-    params: { pageNo: params.pageNo || 1, pageSize: params.pageSize || 10 }
+    params: { page, size }
   })
 }
 

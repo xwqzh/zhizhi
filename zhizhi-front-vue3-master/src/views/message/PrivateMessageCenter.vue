@@ -410,6 +410,17 @@ const parseMessageContent = (content) => {
   return { type: 'text', text: content }
 }
 
+// 统一解析会话列表返回，优先使用分页结构 records，同时兼容旧数组结构
+const extractConversations = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+  if (payload && Array.isArray(payload.records)) {
+    return payload.records
+  }
+  return []
+}
+
 // 加载对话列表
 const loadConversations = async (append = false) => {
   try {
@@ -422,7 +433,7 @@ const loadConversations = async (append = false) => {
     if (res.code === 20000 && res.data) {
       // 后端返回的是 ConversationPageVO 结构
       const pageData = res.data
-      const newConversations = pageData.records || []
+      const newConversations = extractConversations(pageData)
       
       if (append) {
         conversations.value = [...conversations.value, ...newConversations]
@@ -1110,7 +1121,8 @@ const checkNewMessages = async () => {
     })
     
     if (res.code === 20000) {
-      const newConversations = res.data || []
+      const pageData = res.data
+      const newConversations = extractConversations(pageData)
       // 检查是否有新的未读消息
       newConversations.forEach(newConv => {
         const oldConv = conversations.value.find(c => c.userId === newConv.userId)

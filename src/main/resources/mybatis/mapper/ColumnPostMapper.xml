@@ -116,4 +116,15 @@
         DELETE FROM column_post WHERE post_id = #{postId}
     </delete>
 
+    <select id="sumDailyViewCounts" resultType="map">
+        SELECT DATE(p.create_time) AS statDate, COALESCE(SUM(p.view_count), 0) AS statCount
+        FROM column_post cp
+        INNER JOIN post p ON p.id = cp.post_id
+        WHERE cp.column_id = #{columnId}
+          AND p.create_time &gt;= #{startTime}
+          AND p.create_time &lt; #{endTime}
+        GROUP BY DATE(p.create_time)
+        ORDER BY statDate ASC
+    </select>
+
 </mapper>

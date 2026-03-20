@@ -3,6 +3,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/module/user'
 import router from '@/router'
 import type { ApiResponse, ApiError } from '@/types'
+import { normalizeResponseData } from '@/utils/responseNormalizer'
 
 // 扩展 Window 接口
 declare global {
@@ -58,6 +59,11 @@ service.interceptors.request.use(
 ;(service.interceptors.response as any).use(
   (response) => {
     const res = response.data as ApiResponse
+
+    // Canonicalize response data in one place (e.g. createdAt -> createTime) to avoid per-page compatibility logic.
+    if (res && typeof res === 'object' && 'data' in res) {
+      res.data = normalizeResponseData(res.data)
+    }
 
     if (res.code !== 20000) {
       // token 失效处理

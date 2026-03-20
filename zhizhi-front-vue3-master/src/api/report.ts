@@ -8,7 +8,7 @@ interface Report {
   reason: number
   description?: string
   status: number
-  createdAt: string
+  createTime: string
 }
 
 export const ReportTargetType = { POST: 1, COMMENT: 2, USER: 3 } as const

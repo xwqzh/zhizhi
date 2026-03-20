@@ -6,7 +6,7 @@ import cn.xu.common.response.PageResponse;
 import cn.xu.common.response.ResponseEntity;
 import cn.xu.model.entity.Post;
 import cn.xu.model.entity.Tag;
-import cn.xu.repository.PostTagRepository;
+import cn.xu.repository.mapper.PostMapper;
 import cn.xu.service.post.TagService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +33,7 @@ public class TagController {
     private TagService tagService;
 
     @Resource
-    private PostTagRepository postTagRepository;
+    private PostMapper postMapper;
 
     /**
      * 获取标签列表
@@ -150,7 +150,8 @@ public class TagController {
     public ResponseEntity<PageResponse<List<Post>>> getTagPosts(
             @Parameter(description = "标签ID") @PathVariable Long tagId,
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
-            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer size) {
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer size,
+            @Parameter(description = "排序方式：latest/likes/views") @RequestParam(defaultValue = "latest") String sort) {
         try {
             if (tagId == null) {
                 return ResponseEntity.<PageResponse<List<Post>>>builder()
@@ -161,16 +162,17 @@ public class TagController {
             
             // 计算offset
             int offset = Math.max(0, (page - 1) * size);
+            String safeSort = normalizeTagPostSort(sort);
             
             // 获取标签相关的帖子列表
-            List<Post> posts = postTagRepository.getPostsByTagId(tagId, offset, size);
+            List<Post> posts = postMapper.findPostsByTagIdWithSort(tagId, safeSort, offset, size);
             
-            // 统计总数（简化处理，实际应该单独查询）
-            long total = posts.size();
+            // 统计总数（与状态过滤保持一致）
+            Long total = postMapper.countPostsByTagId(tagId);
             
             // 构建分页响应
             PageResponse<List<Post>> pageResponse = 
-                PageResponse.ofList(page, size, total, posts);
+                PageResponse.ofList(page, size, total == null ? 0L : total, posts);
             
             return ResponseEntity.<PageResponse<List<Post>>>builder()
                     .code(ResponseCode.SUCCESS.getCode())
@@ -184,6 +186,17 @@ public class TagController {
                     .info("获取标签相关帖子失败: " + e.getMessage())
                     .build();
         }
+    }
+
+    private String normalizeTagPostSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return "latest";
+        }
+        String normalized = sort.toLowerCase();
+        if ("likes".equals(normalized) || "views".equals(normalized)) {
+            return normalized;
+        }
+        return "latest";
     }
 
     /**
@@ -217,8 +230,9 @@ public class TagController {
                         .build();
             }
             
-            // 统计标签使用次数（帖子数量）
-            int postCount = postTagRepository.getPostsByTagId(tagId, 0, Integer.MAX_VALUE).size();
+            // 统计标签使用次数（仅统计已发布帖子）
+            Long postCountValue = postMapper.countPostsByTagId(tagId);
+            int postCount = postCountValue == null ? 0 : postCountValue.intValue();
             
             // 构建统计响应
             TagStatisticsResponse stats = new TagStatisticsResponse(

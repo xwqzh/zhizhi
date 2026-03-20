@@ -73,8 +73,26 @@ const favoritesApi = {
     return request({ url: '/favorites/my', method: 'post', data })
   },
 
-  batchRemoveFavorites: (data: { items: FavoriteCheckItem[] }): Promise<ApiResponse> => {
-    return request({ url: '/favorites/batch-remove', method: 'post', data })
+  batchRemoveFavorites: async (data: { items: FavoriteCheckItem[] }): Promise<ApiResponse> => {
+    const items = Array.isArray(data?.items) ? data.items : []
+    if (items.length === 0) {
+      return { code: 20000, info: 'success', data: null }
+    }
+
+    const responses = await Promise.all(
+      items.map((item) =>
+        request({
+          url: '/favorites/unfavorite',
+          method: 'post',
+          data: {
+            targetId: item.targetId,
+            targetType: typeof item.targetType === 'string' ? item.targetType.toUpperCase() : item.targetType
+          }
+        })
+      )
+    )
+
+    return responses[responses.length - 1]
   }
 }
 

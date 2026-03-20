@@ -4,6 +4,7 @@ import cn.xu.model.entity.Column;
 import cn.xu.model.entity.ColumnPost;
 import cn.xu.model.vo.column.ColumnDetailVO;
 import cn.xu.model.vo.column.ColumnPostVO;
+import cn.xu.model.vo.column.ColumnStatisticsVO;
 import cn.xu.model.vo.column.ColumnVO;
 import cn.xu.repository.ColumnRepository;
 import cn.xu.repository.UserRepository;
@@ -12,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +34,7 @@ public class ColumnApplicationService {
     private final UserRepository userRepository;
     private final ColumnPostService columnPostService;
     private final cn.xu.repository.PostRepository postRepository;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /**
      * 专栏广场 - 热门专栏
@@ -108,6 +112,35 @@ public class ColumnApplicationService {
         
         ColumnDetailVO vo = convertToDetailVO(column, currentUserId);
         return vo;
+    }
+
+    /**
+     * 获取专栏统计数据
+     */
+    public ColumnStatisticsVO getColumnStatistics(Long columnId, Integer days) {
+        int safeDays = (days == null) ? 30 : Math.max(1, Math.min(days, 365));
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(safeDays - 1L);
+
+        Map<LocalDate, Long> viewCountMap = columnPostService.sumDailyViewCounts(columnId, startDate, endDate);
+        Map<LocalDate, Integer> subscribeCountMap = subscriptionService.countDailySubscriptions(columnId, startDate, endDate);
+
+        List<String> dates = new ArrayList<>(safeDays);
+        List<Long> viewCounts = new ArrayList<>(safeDays);
+        List<Integer> subscribeCounts = new ArrayList<>(safeDays);
+
+        for (int i = 0; i < safeDays; i++) {
+            LocalDate currentDate = startDate.plusDays(i);
+            dates.add(currentDate.format(DATE_FORMATTER));
+            viewCounts.add(viewCountMap.getOrDefault(currentDate, 0L));
+            subscribeCounts.add(subscribeCountMap.getOrDefault(currentDate, 0));
+        }
+
+        return ColumnStatisticsVO.builder()
+                .dates(dates)
+                .viewCounts(viewCounts)
+                .subscribeCounts(subscribeCounts)
+                .build();
     }
 
     /**

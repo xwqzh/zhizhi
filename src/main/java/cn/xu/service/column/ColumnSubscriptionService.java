@@ -10,8 +10,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏订阅服务
@@ -148,5 +152,70 @@ public class ColumnSubscriptionService {
             return 0;
         }
         return subscriptionRepository.countSubscribedColumns(userId);
+    }
+
+    /**
+     * 按天统计订阅数
+     */
+    public Map<LocalDate, Integer> countDailySubscriptions(Long columnId, LocalDate startDate, LocalDate endDate) {
+        if (columnId == null || startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            return Map.of();
+        }
+
+        LocalDateTime startTime = startDate.atStartOfDay();
+        LocalDateTime endTime = endDate.plusDays(1).atStartOfDay();
+        List<Map<String, Object>> rows = subscriptionRepository.countDailySubscriptions(columnId, startTime, endTime);
+        if (rows == null || rows.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<LocalDate, Integer> result = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            LocalDate date = toLocalDate(getValueIgnoreCase(row, "statDate"));
+            if (date == null) {
+                continue;
+            }
+            int count = toInt(getValueIgnoreCase(row, "statCount"));
+            result.merge(date, count, Integer::sum);
+        }
+        return result;
+    }
+
+    private LocalDate toLocalDate(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDate) {
+            return (LocalDate) value;
+        }
+        if (value instanceof java.util.Date) {
+            return ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+        return LocalDate.parse(value.toString());
+    }
+
+    private int toInt(Object value) {
+        if (value == null) {
+            return 0;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return Integer.parseInt(value.toString());
+    }
+
+    private Object getValueIgnoreCase(Map<String, Object> row, String key) {
+        if (row == null || key == null) {
+            return null;
+        }
+        if (row.containsKey(key)) {
+            return row.get(key);
+        }
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 }

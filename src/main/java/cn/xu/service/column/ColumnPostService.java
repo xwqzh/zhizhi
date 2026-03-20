@@ -12,8 +12,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏文章管理服务
@@ -168,6 +172,13 @@ public class ColumnPostService {
     }
 
     /**
+     * 统计专栏文章数量
+     */
+    public int countColumnPosts(Long columnId) {
+        return columnPostRepository.countByColumnId(columnId);
+    }
+
+    /**
      * 获取专栏最近的文章（用于专栏详情页展示）
      */
     public List<ColumnPost> getRecentPosts(Long columnId, int limit) {
@@ -218,6 +229,33 @@ public class ColumnPostService {
     }
 
     /**
+     * 按天聚合专栏文章阅读量（按文章发布时间）
+     */
+    public Map<LocalDate, Long> sumDailyViewCounts(Long columnId, LocalDate startDate, LocalDate endDate) {
+        if (columnId == null || startDate == null || endDate == null || startDate.isAfter(endDate)) {
+            return Map.of();
+        }
+
+        LocalDateTime startTime = startDate.atStartOfDay();
+        LocalDateTime endTime = endDate.plusDays(1).atStartOfDay();
+        List<Map<String, Object>> rows = columnPostRepository.sumDailyViewCounts(columnId, startTime, endTime);
+        if (rows == null || rows.isEmpty()) {
+            return Map.of();
+        }
+
+        Map<LocalDate, Long> result = new HashMap<>();
+        for (Map<String, Object> row : rows) {
+            LocalDate date = toLocalDate(getValueIgnoreCase(row, "statDate"));
+            if (date == null) {
+                continue;
+            }
+            long count = toLong(getValueIgnoreCase(row, "statCount"));
+            result.merge(date, count, Long::sum);
+        }
+        return result;
+    }
+
+    /**
      * 删除帖子时移除所有专栏关联
      */
     @Transactional(rollbackFor = Exception.class)
@@ -234,5 +272,42 @@ public class ColumnPostService {
         }
         
         log.info("[专栏] 移除文章的所有专栏关联 - postId: {}, columnCount: {}", postId, columns.size());
+    }
+    private LocalDate toLocalDate(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDate) {
+            return (LocalDate) value;
+        }
+        if (value instanceof java.util.Date) {
+            return ((java.util.Date) value).toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+        return LocalDate.parse(value.toString());
+    }
+
+    private long toLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return Long.parseLong(value.toString());
+    }
+
+    private Object getValueIgnoreCase(Map<String, Object> row, String key) {
+        if (row == null || key == null) {
+            return null;
+        }
+        if (row.containsKey(key)) {
+            return row.get(key);
+        }
+        for (Map.Entry<String, Object> entry : row.entrySet()) {
+            if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(key)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 }

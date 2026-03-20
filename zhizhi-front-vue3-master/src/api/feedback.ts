@@ -7,7 +7,7 @@ interface Feedback {
   title: string
   content: string
   status: number
-  createdAt: string
+  createTime: string
 }
 
 export const FeedbackType = { BUG: 0, SUGGESTION: 1, CONTENT: 2, OTHER: 3 } as const
@@ -36,11 +36,13 @@ export function submitFeedback(data: {
   return request({ url: '/feedback/submit', method: 'post', data })
 }
 
-export function getMyFeedbackList(params: { pageNo?: number; pageSize?: number } = {}): Promise<ApiResponse<PageResponse<Feedback>>> {
+export function getMyFeedbackList(params: { pageNo?: number; pageSize?: number; page?: number; size?: number } = {}): Promise<ApiResponse<PageResponse<Feedback>>> {
+  const page = params.pageNo ?? params.page ?? 1
+  const size = params.pageSize ?? params.size ?? 10
   return request({
     url: '/feedback/my',
     method: 'get',
-    params: { pageNo: params.pageNo || 1, pageSize: params.pageSize || 10 }
+    params: { page, size }
   })
 }
 

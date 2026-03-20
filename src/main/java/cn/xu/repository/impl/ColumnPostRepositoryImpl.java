@@ -7,7 +7,9 @@ import cn.xu.repository.mapper.ColumnPostMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏文章关联仓储实现
@@ -91,5 +93,10 @@ public class ColumnPostRepositoryImpl implements ColumnPostRepository {
     @Override
     public void deleteByPostId(Long postId) {
         columnPostMapper.deleteByPostId(postId);
+    }
+
+    @Override
+    public List<Map<String, Object>> sumDailyViewCounts(Long columnId, LocalDateTime startTime, LocalDateTime endTime) {
+        return columnPostMapper.sumDailyViewCounts(columnId, startTime, endTime);
     }
 }

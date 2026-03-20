@@ -50,7 +50,7 @@
       <el-form-item label="截图证据（选填）">
         <el-upload
           v-model:file-list="fileList"
-          action="/api/file/upload"
+          :http-request="handleCustomUpload"
           list-type="picture-card"
           :limit="3"
           :on-success="handleUploadSuccess"
@@ -76,9 +76,10 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { FormInstance, FormRules, UploadFile, UploadRawFile } from 'element-plus'
+import type { FormInstance, FormRules, UploadFile, UploadRawFile, UploadRequestOptions } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { submitReport, ReportReasonOptions, ReportTargetType } from '@/api/report'
+import { uploadFiles } from '@/api/file'
 
 // ==================== Types ====================
 
@@ -89,7 +90,7 @@ interface ReportForm {
 
 interface UploadResponse {
   code: number
-  data?: string
+  data?: string | string[]
   info?: string
 }
 
@@ -223,7 +224,12 @@ const handleSubmit = async () => {
  */
 const handleUploadSuccess = (response: UploadResponse, file: UploadFile) => {
   if (response.code === 20000) {
-    file.url = response.data
+    const url = extractUploadUrl(response.data)
+    if (!url) {
+      ElMessage.error('上传成功但未获取到图片地址')
+      return
+    }
+    file.url = url
   } else {
     ElMessage.error(response.info || '上传失败')
     // 移除失败的文件
@@ -237,6 +243,31 @@ const handleUploadSuccess = (response: UploadResponse, file: UploadFile) => {
 /**
  * 移除文件
  */
+const extractUploadUrl = (payload: unknown): string => {
+  if (Array.isArray(payload)) {
+    return typeof payload[0] === 'string' ? payload[0] : ''
+  }
+  return typeof payload === 'string' ? payload : ''
+}
+
+const handleCustomUpload = async (options: UploadRequestOptions) => {
+  try {
+    const response = await uploadFiles([options.file as UploadRawFile]) as unknown as UploadResponse
+    const url = extractUploadUrl(response?.data)
+    if (response?.code === 20000 && url) {
+      options.onSuccess?.({ code: 20000, data: url })
+      return
+    }
+    const errorMessage = response?.info || '图片上传失败'
+    ElMessage.error(errorMessage)
+    options.onError?.(new Error(errorMessage) as any)
+  } catch (error) {
+    const errorMessage = (error as Error)?.message || '图片上传失败'
+    ElMessage.error(errorMessage)
+    options.onError?.(new Error(errorMessage) as any)
+  }
+}
+
 const handleUploadRemove = (file: UploadFile) => {
   const index = fileList.value.findIndex(f => f.uid === file.uid)
   if (index > -1) {

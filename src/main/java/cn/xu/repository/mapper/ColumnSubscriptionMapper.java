@@ -5,7 +5,9 @@ import cn.xu.model.entity.ColumnSubscription;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏订阅Mapper接口
@@ -52,4 +54,11 @@ public interface ColumnSubscriptionMapper {
      * 查询用户订阅的专栏ID列表（分页）
      */
     List<Long> selectSubscribedColumnIds(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
+    /**
+     * 按天统计订阅数（按创建时间）
+     */
+    List<Map<String, Object>> countDailySubscriptions(@Param("columnId") Long columnId,
+                                                      @Param("startTime") LocalDateTime startTime,
+                                                      @Param("endTime") LocalDateTime endTime);
 }

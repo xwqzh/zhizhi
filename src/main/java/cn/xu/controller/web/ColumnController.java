@@ -13,6 +13,7 @@ import cn.xu.model.entity.Column;
 import cn.xu.model.entity.ColumnPost;
 import cn.xu.model.vo.column.ColumnDetailVO;
 import cn.xu.model.vo.column.ColumnPostVO;
+import cn.xu.model.vo.column.ColumnStatisticsVO;
 import cn.xu.model.vo.column.ColumnVO;
 import cn.xu.service.column.ColumnApplicationService;
 import cn.xu.service.column.ColumnPostService;
@@ -260,7 +261,7 @@ public class ColumnController {
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer size) {
         
         List<ColumnPostVO> posts = applicationService.getColumnPostsWithDetails(columnId, page, size);
-        int total = columnPostService.getColumnPosts(columnId, 1, Integer.MAX_VALUE).size();
+        int total = columnPostService.countColumnPosts(columnId);
         
         return ResponseEntity.<PageResponse<List<ColumnPostVO>>>builder()
                 .code(ResponseCode.SUCCESS.getCode())
@@ -269,6 +270,35 @@ public class ColumnController {
     }
 
     // ==================== 专栏订阅 ====================
+
+    @Operation(summary = "获取专栏统计数据")
+    @GetMapping("/{columnId}/statistics")
+    public ResponseEntity<ColumnStatisticsVO> getColumnStatistics(
+            @Parameter(description = "专栏ID") @PathVariable Long columnId,
+            @Parameter(description = "统计天数，范围1-365") @RequestParam(defaultValue = "30") Integer days) {
+
+        int safeDays = days == null ? 30 : Math.max(1, Math.min(days, 365));
+
+        Long userId = null;
+        try {
+            userId = StpUtil.getLoginIdAsLong();
+        } catch (Exception e) {
+            // 未登录用户，仅可查看已发布专栏
+        }
+
+        if (!columnService.canAccessColumn(userId, columnId)) {
+            return ResponseEntity.<ColumnStatisticsVO>builder()
+                    .code(ResponseCode.ILLEGAL_PARAMETER.getCode())
+                    .info("专栏不存在或无权访问")
+                    .build();
+        }
+
+        ColumnStatisticsVO statistics = applicationService.getColumnStatistics(columnId, safeDays);
+        return ResponseEntity.<ColumnStatisticsVO>builder()
+                .code(ResponseCode.SUCCESS.getCode())
+                .data(statistics)
+                .build();
+    }
 
     @Operation(summary = "订阅专栏")
     @PostMapping("/{columnId}/subscribe")

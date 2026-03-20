@@ -12,7 +12,7 @@ export interface FollowInfo {
   userId: number
   targetUserId: number
   status: FollowStatus
-  createdAt: string
+  createTime: string
 }
 
 /**
@@ -21,7 +21,7 @@ export interface FollowInfo {
 export interface FollowListItem {
   user: UserBrief
   followStatus: FollowStatus
-  createdAt: string
+  createTime: string
 }
 
 /**

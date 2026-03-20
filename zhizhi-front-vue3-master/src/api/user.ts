@@ -39,7 +39,8 @@ export function getUserInfo(userId: number): Promise<ApiResponse<User>> {
 
 export function updateUser(user: Partial<User>): Promise<ApiResponse> {
   return request({
-    url: '/user/update',
+    // Compatibility alias: backend only keeps /user/profile/update
+    url: '/user/profile/update',
     method: 'post',
     data: user
   })

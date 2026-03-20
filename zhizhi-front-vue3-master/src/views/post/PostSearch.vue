@@ -203,6 +203,22 @@ interface SearchResult {
   createTime?: string
 }
 
+const normalizeSearchItem = (post: PostItem): SearchResult => {
+  const authorName = post.userName || post.authorName || ''
+  const avatar = post.userAvatar || post.avatar || ''
+  return {
+    id: post.id,
+    title: post.title,
+    description: post.description,
+    avatar,
+    authorName,
+    viewCount: post.viewCount,
+    commentCount: post.commentCount,
+    likeCount: post.likeCount,
+    createTime: post.createTime
+  }
+}
+
 // 防抖函数
 const debounce = <T extends (...args: any[]) => any>(fn: T, delay: number) => {
   let timer: ReturnType<typeof setTimeout> | null = null
@@ -288,17 +304,7 @@ const handleSearch = async (): Promise<void> => {
     
     if (pageData) {
       // 映射 PostItem 到 SearchResult
-      searchResults.value = pageData.data.map(post => ({
-        id: post.id,
-        title: post.title,
-        description: post.description,
-        avatar: post.userAvatar,
-        authorName: post.userName,
-        viewCount: post.viewCount,
-        commentCount: post.commentCount,
-        likeCount: post.likeCount,
-        createTime: post.createTime
-      }))
+      searchResults.value = pageData.data.map((post) => normalizeSearchItem(post))
       
       total.value = pageData.total
       currentPage.value = pageData.pageNo
@@ -375,17 +381,7 @@ const handlePageChange = async (page: number): Promise<void> => {
       
       if (pageData) {
         // 映射 PostItem 到 SearchResult
-        searchResults.value = pageData.data.map(post => ({
-          id: post.id,
-          title: post.title,
-          description: post.description,
-          avatar: post.userAvatar,
-          authorName: post.userName,
-          viewCount: post.viewCount,
-          commentCount: post.commentCount,
-          likeCount: post.likeCount,
-          createTime: post.createTime
-        }))
+        searchResults.value = pageData.data.map((post) => normalizeSearchItem(post))
         
         total.value = pageData.total
         currentPage.value = pageData.pageNo

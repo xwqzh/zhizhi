@@ -5,7 +5,9 @@ import cn.xu.model.entity.ColumnPost;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏文章关联Mapper接口
@@ -87,4 +89,11 @@ public interface ColumnPostMapper {
      * 删除帖子的所有专栏关联
      */
     void deleteByPostId(@Param("postId") Long postId);
+
+    /**
+     * 按天聚合专栏文章阅读量（按文章发布时间）
+     */
+    List<Map<String, Object>> sumDailyViewCounts(@Param("columnId") Long columnId,
+                                                 @Param("startTime") LocalDateTime startTime,
+                                                 @Param("endTime") LocalDateTime endTime);
 }

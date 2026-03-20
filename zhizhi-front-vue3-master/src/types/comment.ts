@@ -16,8 +16,8 @@ export interface Comment {
   replyCount: number
   isLiked: boolean
   children: Comment[]
-  createdAt: string
-  updatedAt: string
+  createTime: string
+  updateTime: string
 }
 
 /**

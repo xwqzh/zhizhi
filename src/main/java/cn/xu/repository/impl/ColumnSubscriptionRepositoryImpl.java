@@ -7,7 +7,9 @@ import cn.xu.repository.mapper.ColumnSubscriptionMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏订阅仓储实现
@@ -56,5 +58,10 @@ public class ColumnSubscriptionRepositoryImpl implements ColumnSubscriptionRepos
     @Override
     public List<Long> findSubscribedColumnIds(Long userId, int offset, int limit) {
         return columnSubscriptionMapper.selectSubscribedColumnIds(userId, offset, limit);
+    }
+
+    @Override
+    public List<Map<String, Object>> countDailySubscriptions(Long columnId, LocalDateTime startTime, LocalDateTime endTime) {
+        return columnSubscriptionMapper.countDailySubscriptions(columnId, startTime, endTime);
     }
 }

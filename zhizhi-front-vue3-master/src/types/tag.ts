@@ -13,5 +13,4 @@ export interface Tag {
   sort?: number
   createTime?: string
   updateTime?: string
-  createdAt?: string
 }

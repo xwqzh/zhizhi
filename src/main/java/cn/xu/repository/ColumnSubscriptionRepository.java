@@ -3,7 +3,9 @@ package cn.xu.repository;
 import cn.xu.model.entity.Column;
 import cn.xu.model.entity.ColumnSubscription;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏订阅仓储接口
@@ -49,4 +51,9 @@ public interface ColumnSubscriptionRepository {
      * 查询用户订阅的专栏ID列表（分页）
      */
     List<Long> findSubscribedColumnIds(Long userId, int offset, int limit);
+
+    /**
+     * 按天统计订阅数
+     */
+    List<Map<String, Object>> countDailySubscriptions(Long columnId, LocalDateTime startTime, LocalDateTime endTime);
 }

@@ -13,12 +13,28 @@ export function isBlocked(userId: number): Promise<ApiResponse<boolean>> {
   return request({ url: `/blocks/status/${userId}`, method: 'get' })
 }
 
-export function getBlockList(params: { pageNo?: number; pageSize?: number } = {}): Promise<ApiResponse<PageResponse<User>>> {
-  return request({
+export async function getBlockList(params: { pageNo?: number; pageSize?: number } = {}): Promise<ApiResponse<PageResponse<User>>> {
+  const pageNo = params.pageNo || 1
+  const pageSize = params.pageSize || 20
+  const response = await request({
     url: '/blocks',
     method: 'get',
-    params: { pageNo: params.pageNo || 1, pageSize: params.pageSize || 20 }
+    params: { page: pageNo, size: pageSize }
   })
+
+  if (Array.isArray(response?.data)) {
+    return {
+      ...response,
+      data: {
+        pageNo,
+        pageSize,
+        total: response.data.length,
+        data: response.data
+      }
+    }
+  }
+
+  return response
 }
 
 export function getBlockCount(): Promise<ApiResponse<number>> {

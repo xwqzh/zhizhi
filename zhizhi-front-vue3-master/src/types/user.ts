@@ -17,8 +17,8 @@ export interface User {
   followingCount: number
   postsCount: number
   likesCount: number
-  createdAt: string
-  updatedAt: string
+  createTime: string
+  updateTime: string
 }
 
 /**

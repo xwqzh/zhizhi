@@ -3,7 +3,9 @@ package cn.xu.repository;
 import cn.xu.model.entity.Column;
 import cn.xu.model.entity.ColumnPost;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 专栏文章关联仓储接口
@@ -84,4 +86,9 @@ public interface ColumnPostRepository {
      * 删除帖子的所有专栏关联
      */
     void deleteByPostId(Long postId);
+
+    /**
+     * 按天聚合专栏文章阅读量（按文章发布时间）
+     */
+    List<Map<String, Object>> sumDailyViewCounts(Long columnId, LocalDateTime startTime, LocalDateTime endTime);
 }

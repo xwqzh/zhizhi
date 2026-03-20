@@ -13,8 +13,13 @@ export function searchTags(keyword: string): Promise<ApiResponse<Tag[]>> {
   return request({ url: '/tag/search', method: 'get', params: { keyword } })
 }
 
-export function getTagPosts(tagId: number, pageNo = 1, pageSize = 20): Promise<ApiResponse<PageResponse<Post>>> {
-  return request({ url: `/tag/${tagId}/posts`, method: 'get', params: { pageNo, pageSize } })
+export function getTagPosts(
+  tagId: number,
+  pageNo = 1,
+  pageSize = 20,
+  sort: 'latest' | 'likes' | 'views' = 'latest'
+): Promise<ApiResponse<PageResponse<Post>>> {
+  return request({ url: `/tag/${tagId}/posts`, method: 'get', params: { page: pageNo, size: pageSize, sort } })
 }
 
 export function getTagStats(tagId: number): Promise<ApiResponse<{ postCount: number }>> {

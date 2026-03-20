@@ -23,7 +23,7 @@ export interface Notification {
   targetId: number | null
   targetType: string | null
   isRead: boolean
-  createdAt: string
+  createTime: string
 }
 
 /**
@@ -56,7 +56,6 @@ export interface PrivateMessage {
   sender?: UserBrief
   receiver?: UserBrief
   isRead?: boolean
-  createdAt?: string
 }
 
 /**
@@ -80,7 +79,6 @@ export interface Conversation {
   // 兼容旧字段
   id?: number
   targetUser?: UserBrief
-  updatedAt?: string
 }
 
 /**

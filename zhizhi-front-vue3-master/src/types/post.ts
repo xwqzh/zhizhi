@@ -41,10 +41,8 @@ export interface Post {
   tags: Array<Tag | string>
   isLiked: boolean
   isFavorited: boolean
-  createdAt: string
-  updatedAt: string
-  createTime?: string
-  updateTime?: string
+  createTime: string
+  updateTime: string
   authorName?: string
   formattedContent?: string
   contentValue?: string
@@ -65,7 +63,7 @@ export interface PostBrief {
   likeCount: number
   commentCount: number
   tags: Tag[]
-  createdAt: string
+  createTime: string
 }
 
 /**

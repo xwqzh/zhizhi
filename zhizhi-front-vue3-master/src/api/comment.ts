@@ -57,10 +57,23 @@ export function reportComment(
   reason: string,
   type = CommentType.POST
 ): Promise<ApiResponse> {
+  void type
+  const parsedReason = Number(reason)
+  const reasonCode = Number.isInteger(parsedReason) && parsedReason >= 1 && parsedReason <= 6
+    ? parsedReason
+    : 6
+  const description = Number.isInteger(parsedReason) ? '' : reason
+
+  // Compatibility alias: old /comment/report was removed, route to /reports
   return request({
-    url: '/comment/report',
+    url: '/reports',
     method: 'post',
-    data: { targetId, commentId, reason, type }
+    data: {
+      targetType: 2,
+      targetId: commentId || targetId,
+      reason: reasonCode,
+      description
+    }
   })
 }
 

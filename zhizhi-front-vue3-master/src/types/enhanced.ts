@@ -123,6 +123,8 @@ export interface PostItem {
   userId: number
   userName: string
   userAvatar: string
+  authorName?: string
+  avatar?: string
   status: number
   viewCount: number
   likeCount: number
