@@ -7,6 +7,7 @@ interface HomePostParams {
   type?: string
   tagId?: number
   sort?: string
+  featured?: boolean
   page?: number
   size?: number
   forceRefresh?: boolean
@@ -26,9 +27,9 @@ export function getPosts(params: HomePostParams): Promise<ApiResponse<PageRespon
     url: '/home/posts',
     method: 'get',
     params: {
-      type: params.type,
       tagId: params.tagId,
       sort: params.sort || 'latest',
+      featured: params.featured === true,
       page: params.page || 1,
       size: params.size || 10
     }
@@ -37,10 +38,10 @@ export function getPosts(params: HomePostParams): Promise<ApiResponse<PageRespon
 
 export function getFeaturedPosts(params: HomePostParams): Promise<ApiResponse<PageResponse<Post>>> {
   const requestFn = () =>
-    request({
-      url: '/home/featured',
-      method: 'get',
-      params: { tagId: params.tagId, page: params.page || 1, size: params.size || 10 }
+    getPosts({
+      ...params,
+      featured: true,
+      sort: 'latest'
     })
 
   if (params.page === 1 && !params.tagId) {
@@ -55,10 +56,10 @@ export function getFeaturedPosts(params: HomePostParams): Promise<ApiResponse<Pa
 
 export function getHotPosts(params: HomePostParams): Promise<ApiResponse<PageResponse<Post>>> {
   const requestFn = () =>
-    request({
-      url: '/home/hot',
-      method: 'get',
-      params: { tagId: params.tagId, page: params.page || 1, size: params.size || 10 }
+    getPosts({
+      ...params,
+      featured: false,
+      sort: 'hot'
     })
 
   if (params.page === 1 && !params.tagId) {

@@ -111,6 +111,11 @@ public class CommentQueryService {
         return commentRepository.countByUserId(userId);
     }
 
+    public long countByParentId(Long parentId) {
+        Long count = commentRepository.countByParentId(parentId);
+        return count != null ? count : 0L;
+    }
+
     /**
      * 获取对话链
      * <p>从当前回复向上追溯对话，找到完整的对话上下文</p>

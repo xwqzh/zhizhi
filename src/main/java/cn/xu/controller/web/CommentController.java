@@ -52,14 +52,14 @@ public class CommentController {
     }
 
     /**
-     * 获取回复列表
+     * 获取回复列表（分页）
      */
-    @PostMapping("/reply/list")
-    @Operation(summary = "获取回复列表")
-    public ResponseEntity<List<CommentVO>> getReplyList(@RequestBody FindReplyRequest req) {
+    @PostMapping("/reply/page")
+    @Operation(summary = "获取回复列表（分页）")
+    public ResponseEntity<PageResponse<List<CommentVO>>> getReplyPage(@RequestBody FindReplyRequest req) {
         Long currentUserId = getLoginUserIdOrNull();
-        List<CommentVO> result = commentService.getReplyList(req, currentUserId);
-        return ResponseEntity.<List<CommentVO>>builder()
+        PageResponse<List<CommentVO>> result = commentService.getReplyListWithPage(req, currentUserId);
+        return ResponseEntity.<PageResponse<List<CommentVO>>>builder()
                 .code(ResponseCode.SUCCESS.getCode())
                 .data(result)
                 .build();

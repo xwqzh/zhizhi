@@ -54,7 +54,7 @@ public class PostSearchController {
             List<String> suggestions = postSearchService.getSearchSuggestions(keyword, limit);
             return ResponseEntity.<List<String>>builder()
                     .code(ResponseCode.SUCCESS.getCode())
-                    .data(suggestions)
+                    .data(suggestions != null ? suggestions : new ArrayList<>())
                     .build();
         } catch (Exception e) {
             log.error("获取搜索建议失败: keyword={}", keyword, e);
@@ -151,7 +151,7 @@ public class PostSearchController {
             
             return ResponseEntity.<List<SearchStatisticsService.HotKeyword>>builder()
                     .code(ResponseCode.SUCCESS.getCode())
-                    .data(result)
+                    .data(result != null ? result : new ArrayList<>())
                     .build();
         } catch (Exception e) {
             log.error("获取热门搜索词详情失败", e);

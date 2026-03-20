@@ -508,8 +508,9 @@ const fetchCommentReplies = async (commentId: number) => {
       pageSize: 100
     }) as any
 
-    // 处理分页结构：response.data 可能是 { data: [...], total: ... } 或直接是数组
-    const replyList = response?.data?.data || response?.data || []
+    // 统一使用分页结构：response.data.data 为回复列表
+    const pageData = response?.data
+    const replyList = Array.isArray(pageData?.data) ? pageData.data : []
     
     if (Array.isArray(replyList)) {
       const commentIndex = comments.value.findIndex(c => c.id === commentId)

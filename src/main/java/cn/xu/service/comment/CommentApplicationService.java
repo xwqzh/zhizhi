@@ -99,18 +99,24 @@ public class CommentApplicationService {
     /**
      * 获取回复列表
      */
-    public List<CommentVO> getReplyList(FindReplyRequest request, Long currentUserId) {
+    public PageResponse<List<CommentVO>> getReplyListWithPage(FindReplyRequest request, Long currentUserId) {
         validatePageParams(request.getPageNo(), request.getPageSize());
-        
+
+        long total = queryService.countByParentId(request.getParentId());
+        if (total == 0) {
+            return PageResponse.emptyList(request.getPageNo(), request.getPageSize());
+        }
+
         List<Comment> replies = queryService.findChildCommentList(request);
         if (replies.isEmpty()) {
-            return new ArrayList<>();
+            return PageResponse.emptyList(request.getPageNo(), request.getPageSize());
         }
 
         List<Long> allIds = converter.collectAllIds(replies);
         Set<Long> userLikeSet = getUserLikeSet(currentUserId, allIds);
+        List<CommentVO> result = converter.toVOList(replies, userLikeSet, null, null);
 
-        return converter.toVOList(replies, userLikeSet, null, null);
+        return PageResponse.ofList(request.getPageNo(), request.getPageSize(), total, result);
     }
 
     /**

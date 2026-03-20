@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import type { ApiResponse, Post, User, Tag } from '@/types'
+import type { ApiResponse, PageResponse, Post, User, Tag } from '@/types'
 
 interface AggregateSearchResult {
   posts: Post[]
@@ -25,11 +25,15 @@ export function aggregateSearch(params: {
   })
 }
 
-export function searchPosts(params: { keyword: string; limit?: number }): Promise<ApiResponse<Post[]>> {
+export function searchPosts(params: { keyword: string; limit?: number }): Promise<ApiResponse<PageResponse<Post>>> {
   return request({
-    url: '/search/posts',
+    url: '/post/search',
     method: 'get',
-    params: { keyword: params.keyword, limit: params.limit || 20 }
+    params: {
+      keyword: params.keyword,
+      page: 1,
+      size: params.limit || 20
+    }
   })
 }
 

@@ -131,16 +131,16 @@ export function getPostDetail(postId: number): Promise<ApiResponse<Post>> {
 }
 
 export function getPostList(params: PostListParams): Promise<ApiResponse<PageResponse<Post>>> {
+  const sort = params.sortBy === SortType.HOTTEST ? 'hot' : 'latest'
   return request({
-    url: '/post/page',
-    method: 'post',
-    data: {
-      pageNo: params.pageNo || 1,
-      pageSize: params.pageSize || 10,
-      type: params.type,
+    url: '/home/posts',
+    method: 'get',
+    params: {
       tagId: params.tagId,
-      sortBy: params.sortBy,
-      keyword: params.keyword
+      sort,
+      featured: false,
+      page: params.pageNo || 1,
+      size: params.pageSize || 10
     }
   })
 }
@@ -218,9 +218,14 @@ export function getUserPosts(userId: number, params: PostListParams): Promise<Ap
 
 export function getHotPosts(params: { pageNo?: number; pageSize?: number }): Promise<ApiResponse<PageResponse<Post>>> {
   return request({
-    url: '/post/hot',
-    method: 'post',
-    data: { pageNo: params.pageNo || 1, pageSize: params.pageSize || 10 }
+    url: '/home/posts',
+    method: 'get',
+    params: {
+      sort: 'hot',
+      featured: false,
+      page: params.pageNo || 1,
+      size: params.pageSize || 10
+    }
   })
 }
 

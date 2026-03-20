@@ -36,7 +36,7 @@ export function getReplyPage(data: {
   pageSize?: number
   sortType?: 'HOT' | 'TIME' | 'NEW' | 'hot' | 'time' | 'new'
 }): Promise<ApiResponse<PageResponse<Comment>>> {
-  return request({ url: '/comment/reply/list', method: 'post', data })
+  return request({ url: '/comment/reply/page', method: 'post', data })
 }
 
 export function createComment(data: CommentCreateData): Promise<ApiResponse<Comment>> {

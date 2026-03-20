@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -199,18 +200,20 @@ public class PostController {
             List<cn.xu.model.vo.column.ColumnVO> columns = postApplicationService.getPostColumns(postId, currentUserId);
             return ResponseEntity.<List<cn.xu.model.vo.column.ColumnVO>>builder()
                     .code(ResponseCode.SUCCESS.getCode())
-                    .data(columns)
+                    .data(columns != null ? columns : Collections.emptyList())
                     .build();
         } catch (BusinessException e) {
             return ResponseEntity.<List<cn.xu.model.vo.column.ColumnVO>>builder()
                     .code(e.getCode())
                     .info(e.getMessage())
+                    .data(Collections.emptyList())
                     .build();
         } catch (Exception e) {
             log.error("获取文章专栏列表失败: postId={}", postId, e);
             return ResponseEntity.<List<cn.xu.model.vo.column.ColumnVO>>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
                     .info("获取文章专栏列表失败，请稍后重试")
+                    .data(Collections.emptyList())
                     .build();
         }
     }
@@ -316,13 +319,14 @@ public class PostController {
             List<PostListVO> result = postApplicationService.getFavoriteRanking(limit);
             return ResponseEntity.<List<PostListVO>>builder()
                     .code(ResponseCode.SUCCESS.getCode())
-                    .data(result)
+                    .data(result != null ? result : Collections.emptyList())
                     .build();
         } catch (Exception e) {
             log.error("获取收藏排行榜失败", e);
             return ResponseEntity.<List<PostListVO>>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
                     .info("获取收藏排行榜失败")
+                    .data(Collections.emptyList())
                     .build();
         }
     }

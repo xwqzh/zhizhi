@@ -87,7 +87,6 @@ import { useUserStore } from '@/stores/module/user'
 import { ElMessage } from 'element-plus'
 import * as Icons from '@element-plus/icons-vue'
 import { 
-  getPostList, 
   SortType,
   getPostsByCursor
 } from '@/api/post'

@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -120,6 +121,7 @@ public class AggregateSearchController {
             return ResponseEntity.<AggregateSearchVO.SearchResultGroup<AggregateSearchVO.PostSearchItem>>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
                     .info("搜索失败")
+                    .data(emptyResultGroup())
                     .build();
         }
     }
@@ -157,6 +159,7 @@ public class AggregateSearchController {
             return ResponseEntity.<AggregateSearchVO.SearchResultGroup<AggregateSearchVO.UserSearchItem>>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
                     .info("搜索失败")
+                    .data(emptyResultGroup())
                     .build();
         }
     }
@@ -194,6 +197,7 @@ public class AggregateSearchController {
             return ResponseEntity.<AggregateSearchVO.SearchResultGroup<AggregateSearchVO.TagSearchItem>>builder()
                     .code(ResponseCode.UN_ERROR.getCode())
                     .info("搜索失败")
+                    .data(emptyResultGroup())
                     .build();
         }
     }
@@ -214,7 +218,7 @@ public class AggregateSearchController {
         List<String> history = searchHistoryService.getHistory(userId);
         return ResponseEntity.<List<String>>builder()
                 .code(ResponseCode.SUCCESS.getCode())
-                .data(history)
+                .data(history != null ? history : Collections.emptyList())
                 .build();
     }
     
@@ -264,7 +268,7 @@ public class AggregateSearchController {
         List<String> hotWords = searchHistoryService.getHotWords();
         return ResponseEntity.<List<String>>builder()
                 .code(ResponseCode.SUCCESS.getCode())
-                .data(hotWords)
+                .data(hotWords != null ? hotWords : Collections.emptyList())
                 .build();
     }
     
@@ -284,7 +288,15 @@ public class AggregateSearchController {
         List<String> suggestions = searchHistoryService.getSuggestions(userId, prefix);
         return ResponseEntity.<List<String>>builder()
                 .code(ResponseCode.SUCCESS.getCode())
-                .data(suggestions)
+                .data(suggestions != null ? suggestions : Collections.emptyList())
+                .build();
+    }
+
+    private <T> AggregateSearchVO.SearchResultGroup<T> emptyResultGroup() {
+        return AggregateSearchVO.SearchResultGroup.<T>builder()
+                .list(Collections.emptyList())
+                .total(0L)
+                .hasMore(false)
                 .build();
     }
 }

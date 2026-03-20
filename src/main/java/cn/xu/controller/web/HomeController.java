@@ -60,29 +60,11 @@ public class HomeController {
     public ResponseEntity<PageResponse<List<PostListVO>>> getPosts(
             @Parameter(description = "tagId") @RequestParam(required = false) Long tagId,
             @Parameter(description = "sort") @RequestParam(defaultValue = "latest") String sort,
+            @Parameter(description = "featured") @RequestParam(defaultValue = "false") Boolean featured,
             @Parameter(description = "page") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "size") @RequestParam(defaultValue = "10") Integer size) {
-        List<Post> posts;
-        long total;
-        if (tagId != null) {
-            if ("hot".equalsIgnoreCase(sort)) {
-                posts = postQueryService.getHotPostsByTag(tagId, page, size);
-                total = postStatisticsService.countHotByTagId(tagId);
-            } else {
-                posts = postQueryService.getByTagId(tagId, page, size);
-                total = postStatisticsService.countByTagId(tagId);
-            }
-        } else {
-            if ("hot".equalsIgnoreCase(sort)) {
-                posts = postQueryService.getHotPosts(page, size);
-                total = postStatisticsService.countHot();
-            } else {
-                posts = postQueryService.getAll(page, size);
-                total = postStatisticsService.countAll();
-            }
-        }
-        List<PostListVO> result = convert(posts);
-        PageResponse<List<PostListVO>> pageResponse = PageResponse.ofList(page, size, total, result);
+        PageResponse<List<PostListVO>> pageResponse = queryPostPage(
+                tagId, sort, page, size, Boolean.TRUE.equals(featured));
         return ResponseEntity.<PageResponse<List<PostListVO>>>builder()
                 .code(ResponseCode.SUCCESS.getCode()).data(pageResponse).build();
     }
@@ -136,17 +118,7 @@ public class HomeController {
             @Parameter(description = "tagId") @RequestParam(required = false) Long tagId,
             @Parameter(description = "page") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "size") @RequestParam(defaultValue = "10") Integer size) {
-        List<Post> posts;
-        long total;
-        if (tagId != null) {
-            posts = postQueryService.getFeaturedPostsByTag(tagId, page, size);
-            total = postStatisticsService.countFeaturedByTagId(tagId);
-        } else {
-            posts = postQueryService.getFeaturedPosts(page, size);
-            total = postStatisticsService.countFeatured();
-        }
-        List<PostListVO> result = convert(posts);
-        PageResponse<List<PostListVO>> pageResponse = PageResponse.ofList(page, size, total, result);
+        PageResponse<List<PostListVO>> pageResponse = queryPostPage(tagId, "latest", page, size, true);
         return ResponseEntity.<PageResponse<List<PostListVO>>>builder()
                 .code(ResponseCode.SUCCESS.getCode()).data(pageResponse).build();
     }
@@ -169,19 +141,41 @@ public class HomeController {
             @Parameter(description = "tagId") @RequestParam(required = false) Long tagId,
             @Parameter(description = "page") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "size") @RequestParam(defaultValue = "10") Integer size) {
-        List<Post> posts;
-        long total;
-        if (tagId != null) {
-            posts = postQueryService.getHotPostsByTag(tagId, page, size);
-            total = postStatisticsService.countHotByTagId(tagId);
-        } else {
-            posts = postQueryService.getHotPosts(page, size);
-            total = postStatisticsService.countHot();
-        }
-        List<PostListVO> result = convert(posts);
-        PageResponse<List<PostListVO>> pageResponse = PageResponse.ofList(page, size, total, result);
+        PageResponse<List<PostListVO>> pageResponse = queryPostPage(tagId, "hot", page, size, false);
         return ResponseEntity.<PageResponse<List<PostListVO>>>builder()
                 .code(ResponseCode.SUCCESS.getCode()).data(pageResponse).build();
+    }
+
+    private PageResponse<List<PostListVO>> queryPostPage(Long tagId, String sort, Integer page, Integer size, boolean featured) {
+        List<Post> posts;
+        long total;
+        if (featured) {
+            if (tagId != null) {
+                posts = postQueryService.getFeaturedPostsByTag(tagId, page, size);
+                total = postStatisticsService.countFeaturedByTagId(tagId);
+            } else {
+                posts = postQueryService.getFeaturedPosts(page, size);
+                total = postStatisticsService.countFeatured();
+            }
+        } else if (tagId != null) {
+            if ("hot".equalsIgnoreCase(sort)) {
+                posts = postQueryService.getHotPostsByTag(tagId, page, size);
+                total = postStatisticsService.countHotByTagId(tagId);
+            } else {
+                posts = postQueryService.getByTagId(tagId, page, size);
+                total = postStatisticsService.countByTagId(tagId);
+            }
+        } else {
+            if ("hot".equalsIgnoreCase(sort)) {
+                posts = postQueryService.getHotPosts(page, size);
+                total = postStatisticsService.countHot();
+            } else {
+                posts = postQueryService.getAll(page, size);
+                total = postStatisticsService.countAll();
+            }
+        }
+        List<PostListVO> result = convert(posts);
+        return PageResponse.ofList(page, size, total, result);
     }
 
     /**
